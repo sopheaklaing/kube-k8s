@@ -45,12 +45,6 @@ jobs:
           IMAGE: ghcr.io/sopheaklaing/kube-k8s:${{ github.event.workflow_run.head_sha }}
         run: |
           set -eu
-          ssh -o BatchMode=yes "$K3S_USER@$K3S_HOST" \
-            "sudo kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml \
-            -n k8s-production-lab set image \
-            deployment/k8s-production-lab-api api=$IMAGE"
 
           ssh -o BatchMode=yes "$K3S_USER@$K3S_HOST" \
-            "sudo kubectl --kubeconfig /etc/rancher/k3s/k3s.yaml \
-            -n k8s-production-lab rollout status \
-            deployment/k8s-production-lab-api --timeout=180s"
+            "sudo /usr/local/sbin/deploy-k8s-production-lab '$IMAGE'"
