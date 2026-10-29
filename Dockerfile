@@ -12,8 +12,10 @@ RUN addgroup --system appgroup \
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+RUN python -m pip install --no-cache-dir --upgrade pip \
+    && python -m pip install --no-cache-dir -r requirements.txt \
+    && python -m pip check \
+    && python -c "import importlib.metadata as m; print('\n'.join(f'{p}=={m.version(p)}' for p in ['msgpack','setuptools','urllib3']))"
 
 COPY app/ ./app/
 

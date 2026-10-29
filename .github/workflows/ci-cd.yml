@@ -31,7 +31,11 @@ jobs:
           cache-dependency-path: requirements.txt
 
       - name: Install dependencies
-        run: python -m pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip check
+          python -m pip freeze
 
       - name: Run tests
         run: python -m pytest -v
@@ -45,8 +49,16 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
+            --pull \
             -t "$IMAGE_NAME:$GITHUB_SHA" \
             .
+
+      - name: Verify installed package versions
+        run: |
+          docker run --rm \
+            --entrypoint python \
+            "$IMAGE_NAME:$GITHUB_SHA" \
+            -c "import importlib.metadata as m; print('\n'.join(f'{p}=={m.version(p)}' for p in ['msgpack','setuptools','urllib3']))"
 
       - name: Scan image with Trivy
         uses: aquasecurity/trivy-action@v0.35.0
@@ -88,6 +100,7 @@ jobs:
       - name: Build and push image
         run: |
           docker build \
+            --pull \
             -t "$IMAGE_NAME:$GITHUB_SHA" \
             -t "$IMAGE_NAME:latest" \
             .
